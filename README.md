@@ -59,3 +59,9 @@ Contributors
 * Mark Galloway
 * Abram Hindle
 * Cole Mackenzie
+* Klyde Pausang
+
+Resources
+============
+* https://github.com/kdpone/CMPUT404-assignment-ajax
+* https://github.com/abramhindle/WebSocketsExamples/blob/master/broadcaster.py

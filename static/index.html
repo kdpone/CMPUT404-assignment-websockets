@@ -6,7 +6,7 @@
     <meta content='width=device-width; height=device-height; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;' name='viewport' />
     <meta name="viewport" content="width=device-width" />
     <meta name="license" content="
-        Copyright 2013 Google, Abram Hindle
+        Copyright 2013 Google, Abram Hindle, Klyde Pausang 2023
         
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -125,6 +125,9 @@ function addEntity(entity, data) {
     world[entity] = data;
     drawNextFrame(); // (but should we?)
     //XXX: Send a XHTML Request that updates the entity you just modified!
+    req = {};
+    req[entity] = data;
+    socket.send(JSON.stringify(req));
 }
 var counter = 0;
 function addEntityWithoutName(data) {
@@ -228,19 +231,22 @@ mouse = (function() {
     return self;
 })();
 
-// Add the application specific mouse listeners!
+/// Add the application specific mouse listeners!
 //XXX: TODO Make these prettier!
 mouse.mousedowners.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'blue'});
+    addEntityWithoutName({'x':x,'y':y,'colour':'pink',
+                          'radius':10});
 });
 
 mouse.mouseuppers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'red'});
-});
-
-mouse.mousedraggers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'green',
+    addEntityWithoutName({'x':x,'y':y,'colour':'red',
                           'radius':10});
+});
+var roygbiv = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet']
+mouse.mousedraggers.push(function(x,y,clicked,e) {
+    let i = Math.floor(Math.random() * 8)
+    addEntityWithoutName({'x':x,'y':y,'colour':roygbiv[i],
+                          'radius':Math.floor(Math.random() * 50)});
 });
 
 
@@ -248,12 +254,13 @@ function update() {
     drawFrame();
 }
 
-
+//Source: https://github.com/abramhindle/WebSocketsExamples/blob/master/static/broadcast.html
 function wsSetup() {
     var url = "ws://"+host+"/subscribe";   
     socket = new WebSocket(url);
     socket.onopen = function() {
-        //XXX: TODO What are you going to do here?
+        // TODO: What are you going to do here?
+        
     };
     socket.onerror = function(msg) {
         debug("WebSocket Error:" + msg.data);
@@ -261,7 +268,14 @@ function wsSetup() {
     socket.onmessage = function(msg) {  
         try {
             debug("WebSocket Recv:" + msg.data);
-            //XXX: TODO What are you going to do here?            
+            // TODO: What are you going to do here?
+            var message = JSON.parse(msg.data);
+            for (let i in message) {
+                world[i] = message[i]
+            }
+            drawNextFrame()
+            
+
         } catch (e) {
             alert("socket on message: " + e);
         }
